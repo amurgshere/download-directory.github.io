@@ -83,14 +83,14 @@ async function fetchRepoInfo(repo) {
 
 	switch (response.status) {
 		case 401: {
-			updateStatus('⚠ The token provided is invalid or has been revoked.', {token: localStorage.token});
+			updateStatus('⚠ The token provided is invalid or has been revoked.', { token: localStorage.token });
 			throw new Error('Invalid token');
 		}
 
 		case 403: {
 			// See https://developer.github.com/v3/#rate-limiting
 			if (response.headers.get('X-RateLimit-Remaining') === '0') {
-				updateStatus('⚠ Your token rate limit has been exceeded.', {token: localStorage.token});
+				updateStatus('⚠ Your token rate limit has been exceeded.', { token: localStorage.token });
 				throw new Error('Rate limit exceeded');
 			}
 
@@ -98,7 +98,7 @@ async function fetchRepoInfo(repo) {
 		}
 
 		case 404: {
-			updateStatus('⚠ Repository was not found.', {repo});
+			updateStatus('⚠ Repository was not found.', { repo });
 			throw new Error('Repository not found');
 		}
 
@@ -106,7 +106,7 @@ async function fetchRepoInfo(repo) {
 	}
 
 	if (!response.ok) {
-		updateStatus('⚠ Could not obtain repository data from the GitHub API.', {repo, response});
+		updateStatus('⚠ Could not obtain repository data from the GitHub API.', { repo, response });
 		throw new Error('Fetch error');
 	}
 
@@ -149,7 +149,7 @@ async function init() {
 		const parsedUrl = new URL(query.get('url'));
 		[, user, repository, ref, dir] = urlParserRegex.exec(parsedUrl.pathname);
 
-		console.log('Source:', {user, repository, ref, dir});
+		console.log('Source:', { user, repository, ref, dir });
 	} catch {
 		return updateStatus();
 	}
@@ -161,7 +161,7 @@ async function init() {
 
 	updateStatus(`Retrieving directory info \nRepo: ${user}/${repository}\nDirectory: /${dir}`);
 
-	const {private: repoIsPrivate} = await fetchRepoInfo(`${user}/${repository}`);
+	const { private: repoIsPrivate } = await fetchRepoInfo(`${user}/${repository}`);
 
 	const repoListingConfig = {
 		user,
@@ -179,19 +179,18 @@ async function init() {
 		return;
 	}
 
-	if (filespec !== null) {
-		updateStatus(`There are ${files.length} total files in directory`);
-		files = files.filter((file) => file.path.match(filespec));
-		updateStatus(`There are ${files.length} files to download after filtering`);
+	if (filespec === null) {
+		updateStatus('There are ${files.length} files to download');
+	} else {
+		updateStatus('There are ${files.length} total files in directory');
+		files = files.filter(file => file.path.match(filespec));
+		updateStatus('There are ${files.length} files to download after filtering');
 
 		if (files.length === 0) {
 			updateStatus('No files to download after filtering');
 			return;
 		}
 	}
-	else {
-		updateStatus(`There are ${files.length} files to download`);
-	} 
 
 	const controller = new AbortController();
 
@@ -229,7 +228,7 @@ async function init() {
 			throw new Error(`HTTP ${response.statusText} for ${file.path}`);
 		}
 
-		const {content} = await response.json();
+		const { content } = await response.json();
 		const decoder = await fetch(`data:application/octet-stream;base64,${content}`);
 		return decoder.blob();
 	};
@@ -242,7 +241,7 @@ async function init() {
 			console.error(`Error downloading ${file.url}. Attempt ${error.attemptNumber}. ${error.retriesLeft} retries left.`);
 		};
 
-		const blob = await pRetry(localDownload, {onFailedAttempt});
+		const blob = await pRetry(localDownload, { onFailedAttempt });
 
 		downloaded++;
 		updateStatus(file.path);
@@ -257,7 +256,7 @@ async function init() {
 		await waitForToken();
 	}
 
-	await pMap(files, downloadFile, {concurrency: 20}).catch(error => {
+	await pMap(files, downloadFile, { concurrency: 20 }).catch(error => {
 		controller.abort();
 
 		if (!navigator.onLine) {
