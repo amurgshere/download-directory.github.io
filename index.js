@@ -129,6 +129,7 @@ async function init() {
 	let ref;
 	let dir;
 	let filename;
+	let filespec;
 
 	const input = document.querySelector('#token');
 	if (localStorage.token) {
@@ -144,6 +145,7 @@ async function init() {
 	try {
 		const query = new URLSearchParams(location.search);
 		filename = query.get('filename');
+		filespec = query.get('filespec');
 		const parsedUrl = new URL(query.get('url'));
 		[, user, repository, ref, dir] = urlParserRegex.exec(parsedUrl.pathname);
 
@@ -173,11 +175,23 @@ async function init() {
 	[files, ref] = await repoListingSlashblanchSupport(ref, dir, repoListingConfig);
 
 	if (files.length === 0) {
-		updateStatus('No files to download');
+		updateStatus('No files to download in directory');
 		return;
 	}
 
-	updateStatus(`Will download ${files.length} files`);
+	if (filespec !== null) {
+		updateStatus(`There are ${files.length} total files in directory`);
+		files = files.filter((file) => file.path.match(filespec));
+		updateStatus(`There are ${files.length} files to download after filtering`);
+
+		if (files.length === 0) {
+			updateStatus('No files to download after filtering');
+			return;
+		}
+	}
+	else {
+		updateStatus(`There are ${files.length} files to download`);
+	} 
 
 	const controller = new AbortController();
 
