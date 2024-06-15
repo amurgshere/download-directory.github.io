@@ -179,9 +179,11 @@ async function init() {
 		return;
 	}
 
-	if (filespec !== null) {
+	if (filespec === null) {
+		updateStatus(`There are ${files.length} files to download`);
+	} else {
 		updateStatus(`There are ${files.length} total files in directory`);
-		files = files.filter((file) => file.path.match(filespec));
+		files = files.filter(file => file.path.match(filespec));
 		updateStatus(`There are ${files.length} files to download after filtering`);
 
 		if (files.length === 0) {
@@ -189,9 +191,6 @@ async function init() {
 			return;
 		}
 	}
-	else {
-		updateStatus(`There are ${files.length} files to download`);
-	} 
 
 	const controller = new AbortController();
 
