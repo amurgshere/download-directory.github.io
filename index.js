@@ -180,11 +180,11 @@ async function init() {
 	}
 
 	if (filespec === null) {
-		updateStatus('There are ${files.length} files to download');
+		updateStatus(`There are ${files.length} files to download`);
 	} else {
-		updateStatus('There are ${files.length} total files in directory');
+		updateStatus(`There are ${files.length} total files in directory`);
 		files = files.filter(file => file.path.match(filespec));
-		updateStatus('There are ${files.length} files to download after filtering');
+		updateStatus(`There are ${files.length} files to download after filtering`);
 
 		if (files.length === 0) {
 			updateStatus('No files to download after filtering');
