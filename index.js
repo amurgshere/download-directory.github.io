@@ -289,3 +289,4 @@ async function init() {
 
 // eslint-disable-next-line unicorn/prefer-top-level-await -- I like having an `init` function since there's a lot of code in this file
 init();
+
